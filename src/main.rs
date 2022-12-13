@@ -9,8 +9,7 @@ async fn main() {
     let app = Router::new()
     
     .route("/", get(|| async { "Hello, World!" }))
-    .route("/again", get(|| async { "Hello, World!" }))
-    .route("/again", get(|| async { "Hello, World!" }));// run it with hyper on localhost:3000
+    .route("/again", get(|| async { "Hello, World!" }));
     axum::Server::bind(&"0.0.0.0:10000".parse().unwrap())
         .serve(app.into_make_service())
         .await
