@@ -1,0 +1,14 @@
+###
+POST http://localhost:10000/api/v1/users/login
+Content-Type: application/json
+
+{
+  "email": "aradionovs@yahoo.com",
+  "passwd": "arturs"
+}
+
+###
+GET  http://localhost:10000/api/v1/users
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjM2FjZDZmMC1lNjdkLTRjYjYtYTZkMy1hMDJlODA1MmMzMjMiLCJleHAiOjE2NzEwMzY4MTMsImlhdCI6MTY3MDk1MDQxMywicm9sZSI6IkFkbWluIn0.5UyvG3dKd3MLzdWPXJsCCwpR8GS7gt796HqZJsvt0XQ
+

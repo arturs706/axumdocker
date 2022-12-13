@@ -1,10 +1,16 @@
-use axum::{routing::{get, post},Router};
+use axum::{routing::{get, post, put, delete},Router, middleware};
 use dotenv::dotenv;
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 use tower_http::cors::CorsLayer;
 use http::Method;
 mod routesuser;
+mod routesproduct;
+mod paymentapi;
+mod orderroutes;
 use tower_cookies::CookieManagerLayer;
+mod mware;
+use mware::{auth_middleware, admin_auth_middleware};
+mod customerrors;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -69,14 +75,33 @@ async fn main() {
         stripepubtoken: StripePublicToken { stripepubtoken: stripe_public_secret }
     };
     let app = Router::new()
+    .route("/api/v1/products/:productid", delete(routesproduct::deleteproducthandler))
+    .route("/api/v1/products/:productid", put(routesproduct::updateproducthandler))
     .route("/api/v1/users", get(routesuser::fetchusershandler))
-    .route("/api/v1/users/register", post(routesuser::regroute))
+    .layer(middleware::from_fn(admin_auth_middleware))    
+    .route("/api/v1/products/create-payment-intent", post(paymentapi::paymentintent))
+    .route("/api/v1/createorders", post(orderroutes::corder))
+    .route("/api/v1/createorders/items", post(orderroutes::createorderdetails)) 
+    .route("/api/v1/users/:userid", put(routesuser::updateuserhandler))
+    .route("/api/v1/users/:userid", get(routesuser::fetchsingleusershandler))
+    .route("/api/v1/orders/:orderid", get(orderroutes::selectallorders))
+    .route("/api/v1/orders/singleorder/:orderid", get(orderroutes::selectsingleorder))
+    .route("/api/v1/favourites/:userid/:productid", post(routesproduct::addfavouriteitems))
+    .route("/api/v1/favourites/:userid", get(routesproduct::fetchfavouriteitems))
+    .route("/api/v1/favourites/:userid/:productid", delete(routesproduct::deletefavorite))
+    .layer(middleware::from_fn(auth_middleware))    
+    .route ("/api/v1/users/resetpassword", post(routesuser::resetpasswordhandler))
+    .route ("/api/v1/users/resetpassword/:token", get(routesuser::resetpasswordtokenhandler))
     .route("/api/v1/users/login", post(routesuser::loginuser))
+    .route("/api/v1/users/register", post(routesuser::regroute))
+
+    .route("/api/v1/products", get(routesproduct::fetchproductshandler))
+    .route("/api/v1/products/:productid", get(routesproduct::fetchproducthandler))
+    .route("/api/v1/products/payment", post(paymentapi::pay))
+    .route("/api/v1/users/refreshtoken", get(routesuser::refreshtokenhandler))
     .layer(cors)
     .layer(CookieManagerLayer::new())
     .with_state(state);
-
-
     axum::Server::bind(&"0.0.0.0:10000".parse().unwrap())
         .serve(app.into_make_service())
         .await
