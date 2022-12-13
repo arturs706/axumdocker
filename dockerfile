@@ -1,7 +1,7 @@
 FROM rust:1.65 as build
 
 
-WORKDIR /src/dockerserver
+WORKDIR /src/axumdocker
 COPY . .
 
 RUN cargo build --release
@@ -9,8 +9,8 @@ RUN cargo build --release
 
 FROM gcr.io/distroless/cc-debian10
 
-COPY --from=build /src/dockerserver/target/release/dockerserver /usr/local/bin/dockerserver
+COPY --from=build /src/axumdocker/target/release/dockerserver /usr/local/bin/axumdocker
 
 WORKDIR /usr/local/bin
 
-CMD ["dockerserver"]
+CMD ["axumdocker"]
