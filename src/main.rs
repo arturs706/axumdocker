@@ -9,7 +9,7 @@ mod paymentapi;
 mod orderroutes;
 use tower_cookies::CookieManagerLayer;
 mod mware;
-use mware::{auth_middleware, admin_auth_middleware};
+use mware::{admin_auth_middleware, auth_middleware};
 mod customerrors;
 
 #[derive(Clone)]
@@ -78,7 +78,7 @@ async fn main() {
     .route("/api/v1/products/:productid", delete(routesproduct::deleteproducthandler))
     .route("/api/v1/products/:productid", put(routesproduct::updateproducthandler))
     .route("/api/v1/users", get(routesuser::fetchusershandler))
-    .layer(middleware::from_fn(admin_auth_middleware))    
+    .route_layer(middleware::from_fn_with_state(state.clone(), admin_auth_middleware))
     .route("/api/v1/products/create-payment-intent", post(paymentapi::paymentintent))
     .route("/api/v1/createorders", post(orderroutes::corder))
     .route("/api/v1/createorders/items", post(orderroutes::createorderdetails)) 
@@ -89,7 +89,13 @@ async fn main() {
     .route("/api/v1/favourites/:userid/:productid", post(routesproduct::addfavouriteitems))
     .route("/api/v1/favourites/:userid", get(routesproduct::fetchfavouriteitems))
     .route("/api/v1/favourites/:userid/:productid", delete(routesproduct::deletefavorite))
-    .layer(middleware::from_fn(auth_middleware))    
+    .route_layer(middleware::from_fn_with_state(state.clone(), auth_middleware))
+    //create middleware with  secret key
+       
+
+
+
+
     .route ("/api/v1/users/resetpassword", post(routesuser::resetpasswordhandler))
     .route ("/api/v1/users/resetpassword/:token", get(routesuser::resetpasswordtokenhandler))
     .route("/api/v1/users/login", post(routesuser::loginuser))
