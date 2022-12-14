@@ -181,7 +181,6 @@ dependencies = [
  "sqlx",
  "sync_wrapper",
  "tokio",
- "tower",
  "tower-cookies",
  "tower-http",
  "tracing",
